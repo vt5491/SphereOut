@@ -9,105 +9,59 @@ public class SphericalPaddle : MonoBehaviour
     public SteamVR_Action_Vector2 movePaddle;
     [Header("General Parms")]
     public float rotateSpeed = 1f;
-    public Transform pivot;
+    // public Transform pivot {get; set;}
+    public Transform Pivot;
     public SphericalCoordinates sc;
+    private SphericalPaddleInternal sphericalPaddleInternal; 
 
-    private float lastPolar;
-    private float lastElevation;
-    public float Radius {get; private set;} 
+    // private float lastPolar;
+    // private float lastElevation;
+    // public float Radius {get; private set;} 
+    public float Radius {get; set;} 
+    public float paddleHeight {get; set;}
+    public float paddleWidth {get; set;}
     void Start()
     {
+        Debug.Log($"SphericalPaddle.Start: entered");
         Radius = 1.0f;
-        // sc = new SphericalCoordinates(transform.position, 3f, 10f, 0f, Mathf.PI * 2f, 0f, Mathf.PI / 4f);
         sc = new SphericalCoordinates(transform.position, 0f, 6f, 
             -Mathf.PI * 1f, Mathf.PI / 1f,  
             -Mathf.PI / 1f, Mathf.PI / 1f);
         sc.loopElevation = true;
         sc.loopPolar = true;
-        // Initialize position
-        transform.position = sc.toCartesian + pivot.position;
-        // transform.position = sc.toCartesian;
-        // transform.Rotate(0, Mathf.PI / 4f, 0);
+        // Initialize  position
+        transform.position = sc.toCartesian + Pivot.position;
+        // this.lastPolar = sc.polar;
+        // this.lastElevation = sc.elevation;
 
-        // transform.Rotate(0, (-sc.polar + Mathf.PI / 2f) * Mathf.Rad2Deg, 0);
-        // var a = (-sc.polar + Mathf.PI) * (Mathf.PI / 2f);
-        this.lastPolar = sc.polar;
-        this.lastElevation = sc.elevation;
+        // Debug.Log($"Start: forward={transform.forward}");
+        sphericalPaddleInternal = new SphericalPaddleInternal();
+        // Debug.Log($"SphericalPaddle.Start: sphericalPaddleInternal.ThetaOut={sphericalPaddleInternal.ThetaOut()}");
+        // paddle width and height are just the size of the bounding box
+        var boundingBox = this.GetComponent<BoxCollider>();
+        paddleWidth = boundingBox.size.x;
+        paddleHeight = boundingBox.size.y;
 
-        // transform.RotateAround(Vector3.zero, Vector3.up, 180f);
-        // transform.RotateAroundLocal( Vector3.up, 180f);
-        // transform.Rotate( Vector3.up, 180f);
-        Debug.Log($"Start: forward={transform.forward}");
+        Debug.Log($"SphericalPaddle: pwidth={paddleWidth}, ph={paddleHeight}");
 
-            // transform.LookAt( pivot.transform , Vector3.up );
     }
 
     void Update()
     {
-        // transform.Rotate( Vector3.up, 180f);
-        // transform.position = sc.Rotate( h * rotateSpeed * Time.deltaTime, v * rotateSpeed * Time.deltaTime ).toCartesian + pivot.position;
         var axis = movePaddle.GetAxis(SteamVR_Input_Sources.RightHand);
-
-        // float polarAngleDelta = 0.0f;
-        // float elevationAngleDelta = 0.0f;
-        // horizontal plane
-        // if (Mathf.Abs(axis.x) > Mathf.Abs(axis.y))
-        // {
-        //     transform.position = sc.Rotate( -axis.x * rotateSpeed * Time.deltaTime, 0 ).toCartesian + pivot.position;
-        // }
-        // else if (Mathf.Abs(axis.y) > Mathf.Abs(axis.x))
-        // {
-        //     transform.position = sc.Rotate( 0, -axis.y * rotateSpeed * Time.deltaTime ).toCartesian + pivot.position;
-        // }
         var cx = axis.x;
         var cy = axis.y;
  
 		var h = cx*cx > cy*cy ? cx : cy;
-		// var v = cy*cy > mv*mv ? kv : mv;
  
-		// if( h*h > .1f || v*v > .1f )
 		if( h*h > .1f )
         {
-            transform.position = sc.Rotate( cx * rotateSpeed * Time.deltaTime, cy * rotateSpeed * Time.deltaTime ).toCartesian + pivot.position;
+            transform.position = sc.Rotate( cx * rotateSpeed * Time.deltaTime, cy * rotateSpeed * Time.deltaTime ).toCartesian + Pivot.position;
 
-            // transform.Rotate(axis.y, axis.x + Mathf.PI / 2f, 0);
-            // transform.Rotate(axis.y, axis.x, 0);
-            /* 
-            float polarDelta = sc.polar - this.lastPolar;
-            Debug.Log($"polarDelta={polarDelta}");
-            transform.Rotate(0, -polarDelta * Mathf.Rad2Deg, 0);
-            this.lastPolar = sc.polar;
-
-            float elevationDelta = sc.elevation - this.lastElevation;
-            transform.Rotate(0, -polarDelta * Mathf.Rad2Deg, 0);
-            this.lastPolar = sc.polar;
-            */
-
-            // transform.LookAt( pivot.position, Vector3.up );
-            // transform.forward = -transform.forward;
-            // transform.LookAt( pivot.position + transform.forward, Vector3.up );
-            // transform.LookAt( pivot.transform , Vector3.up );
-            // transform.LookAt( pivot.transform.forward , Vector3.up );
-            // if (transform.forward.z < 0) {
-            //     // transform.forward.z = -transform.forward.z;
-            //     transform.forward = new Vector3(transform.forward.x, transform.forward.y, -transform.forward.z);
-            //     Debug.Log($"SphericalPaddle.Update.if: forward={transform.forward}");
-            // }
-            transform.LookAt( pivot.transform , Vector3.up );
+            transform.LookAt( Pivot.transform , Vector3.up );
             transform.Rotate( Vector3.up, 180f);
 
         }
-
-        // transform.position = sc.Rotate( -axis.x * rotateSpeed * Time.deltaTime, -axis.y * rotateSpeed * Time.deltaTime ).toCartesian;
-        // transform.position = sc.Rotate( -axis.x * rotateSpeed * Time.deltaTime, 0 ).toCartesian + pivot.position;
-
-        // transform.position = sc.Rotate( 0, -axis.y * rotateSpeed * Time.deltaTime ).toCartesian + pivot.position;
-
-        // transform.position = sc.Rotate( -axis.x * rotateSpeed * Time.deltaTime, -axis.y * rotateSpeed * Time.deltaTime ).toCartesian + pivot.position;
-
-
-        // Debug.Log($"sc={sc.ToString()}");
-        // Debug.Log($"SphericalPaddle.Update: forward={transform.forward}");
 
         if (Input.GetKeyDown("space"))
         {
@@ -115,4 +69,50 @@ public class SphericalPaddle : MonoBehaviour
         }
         
     }
+    // private void OnTriggerEnter(Collider other)
+    // {
+    //     Debug.Log($"SphericalPaddle.OnTrigerEnter: other.tag={other.tag}");
+    // }
+
+    // public void doIt() {
+    //     Debug.Log($"SphericalPaddle.doIt: Radius={Radius}, pos={transform.position]");
+    // }
+    public Vector3 VelocityOut(Vector3 collisionPoint, Vector3 velocityIn, string strategy) {
+        Debug.Log($"SphericalPaddle.VelocityOut: Radius={Radius}, pos={transform.position}");
+        // return 1f;
+        var r = Radius;
+        // Note: Vert and Horiz are "logical" not physical.  Thus vert is always "up" and horizontial is
+        // "sideways" even if the paddle is up at the poles.
+        // delta is distance from the center.
+        // convert collision point into spherical coords.
+        // sc = new SphericalCoordinates(collisionPoint, 0f, 6f, 
+        //     -Mathf.PI * 1f, Mathf.PI / 1f,  
+        //     -Mathf.PI / 1f, Mathf.PI / 1f);
+        // SphericalCoordinates collisonPointSc = sc.Clone();
+        // SphericalCoordinates collisonPointSc = Instantiate(sc);
+        // collisonPointSc = sc.FromCartesian(collisionPoint - Pivot.position);
+        SphericalCoordinates collisonPointSc = new SphericalCoordinates(collisionPoint - Pivot.position);
+        Debug.Log($"sc={sc.ToString()}");
+        Debug.Log($"cpSc={collisonPointSc.ToString()}");
+        // SphericalCoordinates collisionPointSc = new SphericalCoordinates();
+        // collisionPointSc.SetRadius(sc.radius);
+        // collisionPointSc.SetRadius(sc.radius);
+        // float deltaHeight = paddleHeight / 2 - 
+        var deltaElevationAngle = collisonPointSc.elevation - sc.elevation;
+
+        var paddleHeightAngle = paddleHeight / (Radius *  Mathf.PI / 2.0f);
+        Debug.Log($"deltaElevation={deltaElevationAngle * Mathf.Rad2Deg}, paddleHeightAngle={paddleHeightAngle * Mathf.Rad2Deg}");
+        // 90 for tips, 0 at center
+        var vertGapAngle = (Mathf.PI / 2.0f) * deltaElevationAngle / paddleHeightAngle; 
+        Debug.Log($"vertGapAngle={vertGapAngle * Mathf.Rad2Deg}");
+
+        return new Vector3(0,0,0);
+
+    }
+}
+
+public class SphericalPaddleInternal {
+    // public float ThetaOut() {
+    //     return 1f;
+    // }
 }

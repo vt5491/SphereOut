@@ -124,6 +124,6 @@ public class SphericalCoordinates
     public override string ToString()
     {
         // return "[Radius] " + radius + ". [Polar] " + polar + ". [Elevation] " + elevation + ".";
-        return "[Radius] " + radius + ". [Polar] " + polar * Mathf.Rad2Deg + ". [Elevation] " + elevation * Mathf.Rad2Deg + ".";
+        return "[Radius] " + radius + ". [Polar.deg] " + polar * Mathf.Rad2Deg + ". [Elevation.deg] " + elevation * Mathf.Rad2Deg + ".";
     }
 }
