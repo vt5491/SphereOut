@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -96,7 +97,17 @@ public class SphericalCoordinates
  
         if( cartesianCoordinate.x < 0f )
             polar += Mathf.PI;
-        elevation = Mathf.Asin(cartesianCoordinate.y / radius);
+        // try {
+            elevation = Mathf.Asin(cartesianCoordinate.y / radius);
+            // var tmp = Mathf.Asin(cartesianCoordinate.y / radius);
+            // elevation = Mathf.Abs(tmp);
+            // Debug.Log($"SphericalCoordinates: asin={Mathf.Asin(-0.22f / 1.02f)}");
+            // Debug.Log($"SphericalCoordinates: asin2={Mathf.Asin( cartesianCoordinate.y / 1.02f)}");
+            // Debug.Log($"SphericalCoordinates: asin3={Mathf.Asin( cartesianCoordinate.y / radius)}");
+        // }
+        // catch (Exception e) {
+        //     Debug.Log($"SphericalCoordinates: caught error{e}");
+        // }
  
         return this;
     }

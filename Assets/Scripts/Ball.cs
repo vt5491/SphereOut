@@ -24,7 +24,7 @@ public class Ball : MonoBehaviour
         // SphericalPdl = sphericalPaddle_go.GetComponent<SphericalPaddleProto>();
         // SphericalPdl = GameObject.FindWithTag("SphericalPaddle").GetComponent<SphericalPaddle>();
 
-        init();
+        Init();
         Utils.DrawLine(Vector3.zero, Velocity, Color.green, 30.0f);
         // Utils.DrawLine(Vector3.zero, new Vector3(1, 1, 1), Color.blue, 30.0f);
     }
@@ -36,7 +36,7 @@ public class Ball : MonoBehaviour
         
     }
 
-    public void init() {
+    public void Init() {
         // transform.position = new Vector3(0, 2, 5);
 
         // dir = (paddle.transform.position - transform.position).normalized;
@@ -45,8 +45,10 @@ public class Ball : MonoBehaviour
         // Debug.Log("Ball.init: now calling sceneController.initBall");
         // sceneController.initBall();
         // Debug.Log("SceneController.initBall: entered");
+        /*float rndOffset = SceneController.SphericalPaddle.Radius * Random.Range(-0.5f, 0.5f);
+        float tgtPointX = SceneController.SphericalPaddle.transform.position.x + rndOffset;*/ 
         float rndOffset = SceneController.SphericalPaddle.Radius * Random.Range(-0.5f, 0.5f);
-        float tgtPointX = SceneController.SphericalPaddle.transform.position.x + rndOffset; 
+        float tgtPointX = SceneController.SphericalPaddle.transform.position.x; 
         var sp = SceneController.SphericalPaddle;
         Vector3 tgtPoint = new Vector3(tgtPointX, sp.transform.position.y, sp.transform.position.z);
 
@@ -84,12 +86,13 @@ public class Ball : MonoBehaviour
         Velocity = dir *= speed;
 
         // Utils.DrawLine(hitPoint, hitPoint + 3.0f * Velocity, Color.green, 60);
-        Utils.DrawLine(hitPoint, hitPoint + 3.0f * Velocity, Color.green, 60);
+        // Utils.DrawLine(hitPoint, hitPoint + 3.0f * Velocity, Color.green, 60);
+        Utils.DrawLine(transform.position, transform.position + 3.0f * Velocity, Color.green, 60);
 
     }
     private void OnTriggerEnter(Collider other)
     {
-        SceneController.TriggerDispatcher(other);
+        SceneController.BallTriggerDispatcher(other);
     }
 
     // private void OnTriggerEnter(Collider other)

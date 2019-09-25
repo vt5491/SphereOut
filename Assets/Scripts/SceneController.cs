@@ -23,6 +23,13 @@ public class SceneController : MonoBehaviour
 
     void Update()
     {
+        if (Input.GetKeyDown("space"))
+        {
+            SphericalPaddle.Init();
+            Ball.Init();
+            // transform.position = sc.Rotate(0f, 0f).toCartesian;
+            // SphericalPaddle.transform.position = sc.Rotate(0f, 0f).toCartesian;
+        }
         
     }
 
@@ -57,14 +64,17 @@ public class SceneController : MonoBehaviour
     //     }
     // }
     // private void OnTriggerEnter(Collider other)
-    public void TriggerDispatcher(Collider other)
+    public void BallTriggerDispatcher(Collider other)
     {
         Debug.Log($"SceneController.OnTrigerEnter: other.tag={other.tag}, other.pos={other.transform.position}");
         if (other.tag == "SphericalPaddle") {
-            Vector3 paddleCenter = SphericalPaddle.transform.position;
-            // Vector3 pc = SphericalPaddle.Pivot.transform.position;
-            Vector3 bounceAngleDelta = other.transform.position - paddleCenter;
-            Ball.PaddleHit(bounceAngleDelta);
+            // Vector3 paddleCenter = SphericalPaddle.transform.position;
+            // // Vector3 pc = SphericalPaddle.Pivot.transform.position;
+            // Vector3 bounceAngleDelta = other.transform.position - paddleCenter;
+            // Ball.PaddleHit(bounceAngleDelta);
+
+            Vector3 velOut = SphericalPaddle.VelocityOut(other.transform.position, Ball.Velocity, "CenterZero_TipNinety");
+            Ball.Velocity = velOut;
         }
         else if ( other.transform.parent.tag == "Boundary" && other.transform.position != null ) {
             Ball.BoundaryHit(SphericalPaddle, other.transform.position);

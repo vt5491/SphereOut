@@ -16,7 +16,7 @@ public class Brick : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         Debug.Log($"Brick.OnTriggerEnter: entered. other={other}");
-        SceneController.TriggerDispatcher(other);
+        SceneController.BallTriggerDispatcher(other);
     }
 
 }
