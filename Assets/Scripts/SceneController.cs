@@ -73,8 +73,8 @@ public class SceneController : MonoBehaviour
             // Vector3 bounceAngleDelta = other.transform.position - paddleCenter;
             // Ball.PaddleHit(bounceAngleDelta);
 
-            Vector3 velOut = SphericalPaddle.VelocityOut(other.transform.position, Ball.Velocity, "CenterZero_TipNinety");
-            Ball.Velocity = velOut;
+            // Vector3 velOut = SphericalPaddle.VelocityOut(other.transform.position, Ball.Velocity, "CenterZero_TipNinety");
+            // Ball.Velocity = velOut;
         }
         else if ( other.transform.parent.tag == "Boundary" && other.transform.position != null ) {
             Ball.BoundaryHit(SphericalPaddle, other.transform.position);
@@ -83,6 +83,27 @@ public class SceneController : MonoBehaviour
             Ball.BoundaryHit(SphericalPaddle, other.transform.position);
             Debug.Log("SceneController.TriggerDispatcher: Brick Hit");
         }
+    }
+
+    public void BallCollisionDispatcher(Collision other)
+    {
+        ContactPoint contact = other.contacts[0];
+
+        Debug.Log($"SceneController.BallCollisionDispatcher: sp.sc.toCartesian={SphericalPaddle.sc.toCartesian}");
+        var paddleCenter = SphericalPaddle.PaddleCenterWorld();
+        Debug.Log($"SceneController.BallCollisionDispatcher: paddleCenter={paddleCenter}");
+        Debug.Log($"SceneController.BallCollisionDispatcher: contact - paddleCenter={contact.point - paddleCenter}");
+        var centerDelta = contact.point - paddleCenter;
+        var boundingBox = SphericalPaddle.GetComponent<BoxCollider>();
+        float flingRatioWidth = centerDelta.x / boundingBox.size.x;  
+
+        var flingAngle = 45f * flingRatioWidth;
+        Debug.Log($"flingRatioWidth={flingRatioWidth}, flingAngle={flingAngle}");
+        Ball.transform.Rotate(0, 180f + flingAngle, 0);        
+        Debug.Log($"SceneController.BallCollisionDispatcher: transform.forward (pre)={transform.forward}, velocity (pre)={Ball.Velocity}");
+        // Ball.transform.Rotate(45f, 90f, 0);        
+        // Ball.Velocity = transform.forward *= Ball.speed;
+        Debug.Log($"SceneController.BallCollisionDispatcher: transform.forward (post)={transform.forward}, velocity (post)={Ball.Velocity}");
     }
 
 

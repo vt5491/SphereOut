@@ -67,7 +67,7 @@ public class SphericalPaddle : MonoBehaviour
         paddleWidth = boundingBox.size.x;
         paddleHeight = boundingBox.size.y;
 
-        Debug.Log($"SphericalPaddle: pwidth={paddleWidth}, ph={paddleHeight}");
+        Debug.Log($"SphericalPaddle: pwidth={paddleWidth}, ph={paddleHeight}, Pivot.position={Pivot.position}");
     }
 
     void Update()
@@ -157,6 +157,10 @@ public class SphericalPaddle : MonoBehaviour
 
         return velOutSc.toCartesian;
 
+    }
+
+    public Vector3 PaddleCenterWorld() {
+        return sc.toCartesian + Pivot.position;
     }
 }
 
