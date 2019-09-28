@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Ball : MonoBehaviour
 {
-    public float speed {get; set;}= 1.5f; 
+    [SerializeField] public float speed {get; set;}= 1.5f; 
     private Vector3 dir = new Vector3();
     public Vector3 Velocity {get; set;}= new Vector3();
     // private GameObject paddle;

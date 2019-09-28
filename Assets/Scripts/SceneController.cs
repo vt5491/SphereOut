@@ -4,28 +4,45 @@ using UnityEngine;
 
 public class SceneController : MonoBehaviour
 {
+    [SerializeField] private GameObject paddleGameObject; 
+    // private IPaddle paddle;
+    // [SerializeField] public IPaddle paddle2; 
     // public static SphericalPaddleProto SphericalPdl {get; private set;}
-    public static SphericalPaddle SphericalPaddle {get; private set;}
+    // public static SphericalPaddle SphericalPaddle {get; private set;}
+    // public static IPaddle paddle {get; private set;}
+    // public IPaddle Paddle; 
+    private static SphericalPaddle SphericalPaddle {get; set;}
+    private static PlanarPaddle PlanarPaddle {get; set;}
     public static Ball Ball {get; private set;}
     // void Start()
     void Awake()
     {
-        // Debug.Log("SceneController.Awake: entered");
+        Debug.Log($"SceneController.Awake: entered, paddle.GetType={paddleGameObject.GetType()}");
         // var sphericalPaddle_go = GameObject.Find("spherical_paddle_proto"); 
-        var sphericalPaddle_go = GameObject.Find("SphericalPaddle"); 
+        // var sphericalPaddle_go = GameObject.Find("SphericalPaddle"); 
         // SphericalPdl = sphericalPaddle_go.GetComponent<SphericalPaddleProto>();
         // SphericalPdl = sphericalPaddle_go.GetComponent<SphericalPaddle>();
-        SphericalPaddle = GameObject.FindWithTag("SphericalPaddle").GetComponent<SphericalPaddle>();
+        // SphericalPaddle = GameObject.FindWithTag("SphericalPaddle").GetComponent<SphericalPaddle>();
+        if (paddleGameObject.GetComponent<SphericalPaddle>() != null) {
+            SphericalPaddle = paddleGameObject.GetComponent<SphericalPaddle>();
+        }
+        if (paddleGameObject.GetComponent<PlanarPaddle>() != null) {
+            PlanarPaddle = paddleGameObject.GetComponent<PlanarPaddle>();
+        }
 
         Ball = GameObject.Find("Ball").GetComponent<Ball>();
         
+        Debug.Log($"SceneController.Awake: entered, SphericalPaddle.GetType()={SphericalPaddle.GetType()}");
     }
 
     void Update()
     {
         if (Input.GetKeyDown("space"))
         {
-            SphericalPaddle.Init();
+            if (SphericalPaddle)
+                SphericalPaddle.Init();
+            if (PlanarPaddle)
+                PlanarPaddle.Init();
             Ball.Init();
             // transform.position = sc.Rotate(0f, 0f).toCartesian;
             // SphericalPaddle.transform.position = sc.Rotate(0f, 0f).toCartesian;
@@ -41,7 +58,6 @@ public class SceneController : MonoBehaviour
     public void initBall() {
         // point the velocity to somewhere within the spherical paddle's
         // radius;
-        // Debug.Log("SceneController.initBall: entered");
         float rndOffset = SphericalPaddle.Radius * Random.Range(-0.5f, 0.5f);
         float tgtPointX = SphericalPaddle.transform.position.x + rndOffset; 
         var sp = SphericalPaddle;
@@ -87,23 +103,31 @@ public class SceneController : MonoBehaviour
 
     public void BallCollisionDispatcher(Collision other)
     {
-        ContactPoint contact = other.contacts[0];
+        if (other.gameObject.tag == "SphericalPaddle")
+        {
+            ContactPoint contact = other.contacts[0];
 
-        Debug.Log($"SceneController.BallCollisionDispatcher: sp.sc.toCartesian={SphericalPaddle.sc.toCartesian}");
-        var paddleCenter = SphericalPaddle.PaddleCenterWorld();
-        Debug.Log($"SceneController.BallCollisionDispatcher: paddleCenter={paddleCenter}");
-        Debug.Log($"SceneController.BallCollisionDispatcher: contact - paddleCenter={contact.point - paddleCenter}");
-        var centerDelta = contact.point - paddleCenter;
-        var boundingBox = SphericalPaddle.GetComponent<BoxCollider>();
-        float flingRatioWidth = centerDelta.x / boundingBox.size.x;  
+            Debug.Log($"SceneController.BallCollisionDispatcher: sp.sc.toCartesian={SphericalPaddle.sc.toCartesian}");
+            var paddleCenter = SphericalPaddle.PaddleCenterWorld();
+            Debug.Log($"SceneController.BallCollisionDispatcher: paddleCenter={paddleCenter}");
+            Debug.Log($"SceneController.BallCollisionDispatcher: contact - paddleCenter={contact.point - paddleCenter}");
+            var centerDelta = contact.point - paddleCenter;
+            var boundingBox = SphericalPaddle.GetComponent<BoxCollider>();
+            float flingRatioWidth = centerDelta.x / boundingBox.size.x;
 
-        var flingAngle = 45f * flingRatioWidth;
-        Debug.Log($"flingRatioWidth={flingRatioWidth}, flingAngle={flingAngle}");
-        Ball.transform.Rotate(0, 180f + flingAngle, 0);        
-        Debug.Log($"SceneController.BallCollisionDispatcher: transform.forward (pre)={transform.forward}, velocity (pre)={Ball.Velocity}");
-        // Ball.transform.Rotate(45f, 90f, 0);        
-        // Ball.Velocity = transform.forward *= Ball.speed;
-        Debug.Log($"SceneController.BallCollisionDispatcher: transform.forward (post)={transform.forward}, velocity (post)={Ball.Velocity}");
+            var flingAngle = 45f * flingRatioWidth;
+            Debug.Log($"flingRatioWidth={flingRatioWidth}, flingAngle={flingAngle}");
+            Ball.transform.Rotate(0, 180f + flingAngle, 0);
+            Debug.Log($"SceneController.BallCollisionDispatcher: transform.forward (pre)={transform.forward}, velocity (pre)={Ball.Velocity}");
+            // Ball.transform.Rotate(45f, 90f, 0);        
+            // Ball.Velocity = transform.forward *= Ball.speed;
+            Debug.Log($"SceneController.BallCollisionDispatcher: transform.forward (post)={transform.forward}, velocity (post)={Ball.Velocity}");
+        }
+        else if (other.gameObject.tag == "PlanarPaddle")
+        {
+            Debug.Log($"SceneController: planar paddle hit");
+            Ball.transform.Rotate(0, 180f, 0);
+        }
     }
 
 
