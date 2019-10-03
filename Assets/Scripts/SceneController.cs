@@ -5,7 +5,8 @@ using UnityEngine;
 public class SceneController : MonoBehaviour
 {
     [SerializeField] private GameObject paddleGameObject; 
-    // private IPaddle paddle;
+    private IPaddle paddle;
+    // private Paddle paddle;
     // [SerializeField] public IPaddle paddle2; 
     // public static SphericalPaddleProto SphericalPdl {get; private set;}
     // public static SphericalPaddle SphericalPaddle {get; private set;}
@@ -14,6 +15,7 @@ public class SceneController : MonoBehaviour
     private static SphericalPaddle SphericalPaddle {get; set;}
     private static PlanarPaddle PlanarPaddle {get; set;}
     public static Ball Ball {get; private set;}
+    public static BrickPlane BrickPlane {get; private set;}
     // void Start()
     void Awake()
     {
@@ -25,20 +27,31 @@ public class SceneController : MonoBehaviour
         // SphericalPaddle = GameObject.FindWithTag("SphericalPaddle").GetComponent<SphericalPaddle>();
         if (paddleGameObject.GetComponent<SphericalPaddle>() != null) {
             SphericalPaddle = paddleGameObject.GetComponent<SphericalPaddle>();
+            paddle = (IPaddle) SphericalPaddle;
         }
         if (paddleGameObject.GetComponent<PlanarPaddle>() != null) {
             PlanarPaddle = paddleGameObject.GetComponent<PlanarPaddle>();
+            // paddle = (IPaddle) PlanarPaddle;
+            paddle = (IPaddle) PlanarPaddle;
+            // Debug.Log($"SceneController: paddle.DoIt={paddle.DoIt()}");
+            // Debug.Log($"SceneController: paddle.DoIt={PlanarPaddle.DoIt()}");
         }
 
         Ball = GameObject.Find("Ball").GetComponent<Ball>();
+
+        var brickPlaneGo = GameObject.FindWithTag("BrickPlane");
+        if (brickPlaneGo != null) {
+            BrickPlane = brickPlaneGo.GetComponent<BrickPlane>();
+        }
         
-        Debug.Log($"SceneController.Awake: entered, SphericalPaddle.GetType()={SphericalPaddle.GetType()}");
+        // Debug.Log($"SceneController.Awake: entered, SphericalPaddle.GetType()={SphericalPaddle.GetType()}");
     }
 
     void Update()
     {
         if (Input.GetKeyDown("space"))
         {
+            Debug.Log($"SceneController.Update: space pressed");
             if (SphericalPaddle)
                 SphericalPaddle.Init();
             if (PlanarPaddle)
@@ -66,7 +79,7 @@ public class SceneController : MonoBehaviour
         Ball.transform.position = new Vector3(0, 2, 5);
 
         var dir = (tgtPoint - Ball.transform.position).normalized;
-        Ball.Velocity = dir *= Ball.speed;
+        Ball.Velocity = dir *= Ball.Speed;
         // Debug.Log($"SceneController.initBall: Velocity={Ball.Velocity}");
     }
 
@@ -83,6 +96,9 @@ public class SceneController : MonoBehaviour
     public void BallTriggerDispatcher(Collider other)
     {
         Debug.Log($"SceneController.OnTrigerEnter: other.tag={other.tag}, other.pos={other.transform.position}");
+        if (other.transform.parent != null) 
+            Debug.Log($"SceneController.OnTrigerEnter: other.parent.tag={other.transform.parent.tag}");
+
         if (other.tag == "SphericalPaddle") {
             // Vector3 paddleCenter = SphericalPaddle.transform.position;
             // // Vector3 pc = SphericalPaddle.Pivot.transform.position;
@@ -93,11 +109,26 @@ public class SceneController : MonoBehaviour
             // Ball.Velocity = velOut;
         }
         else if ( other.transform.parent.tag == "Boundary" && other.transform.position != null ) {
-            Ball.BoundaryHit(SphericalPaddle, other.transform.position);
+            if (SphericalPaddle != null) {
+                Ball.BoundaryHit(SphericalPaddle, other.transform.position);
+            }
+            if (PlanarPaddle != null) {
+                Ball.BoundaryHit(PlanarPaddle, other.transform.position);
+            }
         }
         else if ( other.transform.parent.tag == "Brick") {
-            Ball.BoundaryHit(SphericalPaddle, other.transform.position);
-            Debug.Log("SceneController.TriggerDispatcher: Brick Hit");
+            // Ball.BrickHit(paddle, other);
+            var brickGo = other.gameObject;
+            // var brick = brickGo.GetComponent<Brick>();
+            string brickKey = brickGo.name;
+            Debug.Log($"SceneController.TriggerDispatcher: Brick Hit, index={brickKey}");
+
+            if (BrickPlane != null) {
+                BrickPlane.PlayBrickHitAudio();
+            }
+        }
+        else if ( other.tag == "PlanarPaddle") {
+            Debug.Log("SceneController.TriggerDispatcher: Planar paddle Hit");
         }
     }
 
@@ -122,12 +153,39 @@ public class SceneController : MonoBehaviour
             // Ball.transform.Rotate(45f, 90f, 0);        
             // Ball.Velocity = transform.forward *= Ball.speed;
             Debug.Log($"SceneController.BallCollisionDispatcher: transform.forward (post)={transform.forward}, velocity (post)={Ball.Velocity}");
+            // Ball.LastForward = Ball.transform.forward;
         }
         else if (other.gameObject.tag == "PlanarPaddle")
         {
             Debug.Log($"SceneController: planar paddle hit");
-            Ball.transform.Rotate(0, 180f, 0);
+            PlanarPaddle.PlayPaddleHitAudio();
+            ContactPoint contact = other.contacts[0];
+            var centerDelta = contact.point - PlanarPaddle.transform.position;
+
+            Debug.Log($"SC: centerDelta={centerDelta}, PlanarPaddle.Width={PlanarPaddle.Width}");
+            var widthFactorAngle = 45f * centerDelta.x / PlanarPaddle.Width;
+            Debug.Log($"SC: widthFactorAngle={widthFactorAngle}");
+            // var widthAngleFactor =
+            Ball.transform.Rotate(0, 180f + widthFactorAngle, 0);
+            // Ball.LastForward = Ball.transform.forward;
         }
+        else if (other.gameObject.tag == "SideWall") {
+            var fwd = Ball.transform.forward;
+            Ball.transform.forward =  new Vector3(-fwd.x, fwd.y, fwd.z);
+            // Ball.LastForward = Ball.transform.forward;
+        }
+    }
+
+    public void BrickCollisionDispatcher(Collision other) {
+        if(other.gameObject.tag == "Ball") {
+            Ball.BrickBounce();
+            BrickPlane.PlayBrickHitAudio();
+        }
+
+    }
+
+    public bool BallExceededPaddleBoundary() {
+        return paddle.ExceededPaddleBoundary(Ball.transform.position);
     }
 
 

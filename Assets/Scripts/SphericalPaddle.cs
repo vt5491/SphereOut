@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Valve.VR;
 
-public class SphericalPaddle : MonoBehaviour
+public class SphericalPaddle : MonoBehaviour, IPaddle
 {
     [Header("Action Mappings")]
     public SteamVR_Action_Vector2 movePaddle;
@@ -20,6 +20,8 @@ public class SphericalPaddle : MonoBehaviour
     public float Radius {get; set;} 
     public float paddleHeight {get; set;}
     public float paddleWidth {get; set;}
+    public float Width {get; set;}
+    public float Height {get; set;}
     void Start()
     {
         Debug.Log($"SphericalPaddle.Start: entered");
@@ -157,6 +159,10 @@ public class SphericalPaddle : MonoBehaviour
 
         return velOutSc.toCartesian;
 
+    }
+
+    public bool ExceededPaddleBoundary(Vector3 pos) {
+        return false;
     }
 
     public Vector3 PaddleCenterWorld() {

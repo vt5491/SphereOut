@@ -4,13 +4,15 @@ using UnityEngine;
 
 public class Ball : MonoBehaviour
 {
-    [SerializeField] public float speed {get; set;}= 1.5f; 
+    [SerializeField] public float Speed {get; set;} 
     private Vector3 dir = new Vector3();
     public Vector3 Velocity {get; set;}= new Vector3();
     // private GameObject paddle;
     // private SceneController sceneController;
     private SceneController SceneController {get; set;}
     // protected static SphericalPaddle SphericalPdl {get; private set;}
+    public Vector3 LastForward;
+
     void Start()
     // void Awake()
     // public void Init()
@@ -24,6 +26,7 @@ public class Ball : MonoBehaviour
         // SphericalPdl = sphericalPaddle_go.GetComponent<SphericalPaddleProto>();
         // SphericalPdl = GameObject.FindWithTag("SphericalPaddle").GetComponent<SphericalPaddle>();
 
+        LastForward = -Vector3.forward;
         Init();
         Utils.DrawLine(Vector3.zero, Velocity, Color.green, 30.0f);
         // Utils.DrawLine(Vector3.zero, new Vector3(1, 1, 1), Color.blue, 30.0f);
@@ -31,30 +34,43 @@ public class Ball : MonoBehaviour
 
     void Update()
     {
+        // Debug.Log($"Ball.Update: ball.transform.forward={transform.forward}");
         // Vector3 posDelta = Time.deltaTime * Velocity;
-        Vector3 posDelta = Time.deltaTime * transform.forward;
+        Vector3 posDelta = Time.deltaTime * transform.forward * Speed;
         transform.position += posDelta;
+
+        if (SceneController.BallExceededPaddleBoundary())
+        {
+            LastForward = transform.forward;
+            Init();
+        }
         
     }
 
     public void Init() {
-        Debug.Log($"Vector3.right={Vector3.right}, Vector3.left={Vector3.left}, Vector3.up={Vector3.up}, Vector3.forward={Vector3.forward}");
+        Debug.Log($"Ball.Init: Vector3.right={Vector3.right}, Vector3.left={Vector3.left}, Vector3.up={Vector3.up}, Vector3.forward={Vector3.forward}");
+        Speed = 2.0f;
         // transform.position = new Vector3(0, 4, 5);
         // transform.position = new Vector3(5, 4, 5);
-        transform.position = new Vector3(5, 0, 5);
+        // transform.position = new Vector3(5, 0, 5);
+        transform.position = new Vector3(0, 1, 6);
         // reset forward position to the default
-        transform.forward = Vector3.forward;
+        // transform.forward = -Vector3.forward;
+        transform.forward = LastForward;
+        Debug.Log($"Ball.Init: ball.transform.forward={transform.forward}");
 
         // transform.forward = Quaternion.AngleAxis(-90, transform.forward) * transform.forward;
+        /* 
         transform.forward = Quaternion.AngleAxis(180, Vector3.right) * transform.forward;
         transform.forward = Quaternion.AngleAxis(45, Vector3.up) * transform.forward;
         transform.forward = Quaternion.AngleAxis(45, Vector3.right) * transform.forward;
+        */
         // transform.forward = Quaternion.AngleAxis(-45, Vector3.forward) * transform.forward;
         // works
         // transform.Rotate(0, 45, 0);
         Debug.Log($"Ball.Init: transform.forward={transform.forward}");
         // transform.position = new Vector3(0, 2, 5);
-        Velocity = transform.forward *= speed;
+        Velocity = transform.forward *= Speed;
 
         // // dir = (paddle.transform.position - transform.position).normalized;
         // dir = new Vector3(0, 0, -1);
@@ -105,7 +121,7 @@ public class Ball : MonoBehaviour
     // Send the ball back towards the game center
     public void BoundaryHit(SphericalPaddle paddle, Vector3 hitPoint) {
         dir = -1 * (transform.position - paddle.Pivot.position).normalized;
-        Velocity = dir *= speed;
+        Velocity = dir *= Speed;
 
         transform.forward = dir;
         // Utils.DrawLine(hitPoint, hitPoint + 3.0f * Velocity, Color.green, 60);
@@ -113,6 +129,15 @@ public class Ball : MonoBehaviour
         // transform.Rotate(0, 180f + flingAngle, 0);        
         Utils.DrawLine(transform.position, transform.position + 3.0f * Velocity, Color.green, 60);
 
+    }
+    public void BoundaryHit(PlanarPaddle paddle, Vector3 hitPoint) {
+        var fwd = transform.forward;
+        transform.forward = new Vector3(fwd.x, fwd.y, -fwd.z);
+    }
+
+    public void BrickHit(IPaddle paddle, Collider other) {
+        // transform.position = new Vector3(transform.position.x, transform.position.y, -transform.position.z);
+        transform.forward = new Vector3(transform.forward.x, transform.forward.y, -transform.forward.z);
     }
     private void OnTriggerEnter(Collider other)
     {
@@ -131,6 +156,11 @@ public class Ball : MonoBehaviour
         SceneController.BallCollisionDispatcher(other);
     }
 
+    public void BrickBounce() {
+        var fwd = transform.forward;
+        transform.forward = new Vector3(fwd.x, fwd.y, -fwd.z);
+
+    }
 
     // private void OnTriggerEnter(Collider other)
     // {
